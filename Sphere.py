@@ -8,10 +8,17 @@ class Sphere:
         self.radius = r
         self.color = color
 
-    def shadow(self):
+    def pointcolor(self, ambient_coefficient, diffuse_coefficient, shade):
         # returns the color for when the object is in shadow
-        new = ( self.color[0] / 2, self.color[1] / 2, self.color[2] / 2 )
-        return new
+        mod = ambient_coefficient + diffuse_coefficient * shade
+        point_color = ( int(self.color[0] * mod), \
+            int(self.color[1] * mod), \
+            int(self.color[2] * mod) )
+        return point_color
+
+    def normal(self, point):
+        # returns the normal for a point on the sphere
+        return Ray(point1=self.pos, point2=point)
 
     def ray_intersect(self, ray):
         # vector between vector origin and sphere pos

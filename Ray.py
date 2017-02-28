@@ -2,9 +2,19 @@ from Coord import Coord
 import math
 
 class Ray:
-    def __init__(self, point1, point2):
-        self.origin = point1
-        self.unitvector = self.calculate_unitvector(point1, point2)
+    def __init__(self, *args, **kwargs):
+        if 'point1' in kwargs:
+            self.origin = kwargs['point1']
+            self.unitvector = self.calculate_unitvector(self.origin, kwargs['point2'])
+        elif 'origin' in kwargs:
+            self.origin = kwargs['origin']
+            self.unitvector = kwargs['vector']
+
+    def scale(self, num):
+        x = self.unitvector.x * num
+        y = self.unitvector.y * num
+        z = self.unitvector.z * num
+        return Ray( origin=self.origin, vector=Coord(x, y, z) )
 
     def intersect_point(self, dist):
         x = self.unitvector.x * dist + self.origin.x
