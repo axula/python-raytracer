@@ -8,11 +8,16 @@ class Sphere:
         self.radius = r
         self.color = color
 
+    def shadow(self):
+        # returns the color for when the object is in shadow
+        new = ( self.color[0] / 2, self.color[1] / 2, self.color[2] / 2 )
+        return new
+
     def ray_intersect(self, ray):
-        # vector between camera and sphere pos
-        L = Coord(self.pos.x - ray.origin.x, 
-                  self.pos.y - ray.origin.y, 
-                  self.pos.z - ray.origin.z)
+        # vector between vector origin and sphere pos
+        L = Coord(ray.origin.x - self.pos.x,
+                  ray.origin.y - self.pos.y,
+                  ray.origin.z - self.pos.z)
         b = 2.0 * ray.unitvector.x * (L.x) + 2.0 * ray.unitvector.y * (L.y) + \
             2.0 * ray.unitvector.z * (L.z)
         c = self.pos.x**2 + self.pos.y**2 + self.pos.z**2 + \
@@ -25,9 +30,12 @@ class Sphere:
             return 0.0
         else:
             t0 = (-b - math.sqrt(d)) / 2.0
-            if t0 >= 0.0: 
+            if t0 >= 0.0:
                 return t0
             t1 = (-b + math.sqrt(d)) / 2.0
             if t1 >= 0:
                 return t1
             return 0.0
+
+    def __str__(self):
+        return "Sphere at %s, with radius %f" % (self.pos, self.radius)

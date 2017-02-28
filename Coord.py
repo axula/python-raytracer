@@ -3,3 +3,6 @@ class Coord:
         self.x = x
         self.y = y
         self.z = z
+
+    def __str__(self):
+        return "(%f, %f, %f)" % (self.x, self.y, self.z)
