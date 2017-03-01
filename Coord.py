@@ -12,6 +12,14 @@ class Coord:
         z = vector.unitvector.z * dist + self.z
         return Coord( x, y, z )
 
+    def directionvector(self, point2):
+        return Coord(point2.x - self.x, point2.y - self.y, point2.z - self.z)
+
+    def dotproduct(self, b):
+        return (self.x * b.x) + \
+               (self.y * b.y) + \
+               (self.z * b.z)
+
     def distance(self, point):
         d = Coord(self.x - point.x, self.y - point.y, self.z - point.z)
         return math.sqrt(d.x**2 + d.y**2 + d.z**2)

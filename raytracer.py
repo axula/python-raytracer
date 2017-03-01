@@ -1,24 +1,39 @@
 from PIL import Image
+from Scene import Scene
 from Coord import Coord
 from Ray import Ray
-from objects import Sphere
+from objects import Sphere, Plane
 
-def getpixel(ray, objects):
+def createimage(scene):
+    ypos = scene.height * scene.unit / 2.0
+    for y in range(scene.height):
+        xpos = -scene.width * scene.unit / 2.0
+        for x in range(scene.width):
+            ray = Ray(point1=scene.camera, point2=Coord(xpos, ypos, scene.depth))
+            scene.pixels.append( getpixel(ray) )
+            xpos += scene.unit
+        ypos -= scene.unit
+
+    image = Image.new('RGB', (scene.width, scene.height))
+    image.putdata(scene.pixels)
+    image.save('test.jpg')
+
+def getpixel(ray):
     # calculates the color of the current pixel based on interected objects
-    intersect, dist = raytrace(ray, objects)
+    intersect, dist = raytrace(ray, scene.objects)
     if intersect:
         intersect_point = ray.intersect_point( dist )
-        light_vector = Ray(point1=light, point2=intersect_point)
+        light_vector = Ray(point1=scene.light, point2=intersect_point)
         normal_vector = intersect.normal(intersect_point)
-        if inshadow(intersect_point, normal_vector, light_vector, objects):
+        if inshadow(intersect_point, normal_vector, light_vector, scene.objects):
             shade = 0.0
         else:
             shade = lambertshade(light_vector, normal_vector)
-        point_color = intersect.pointcolor(ambient_coefficient, \
-                        diffuse_coefficient, shade)
+        point_color = intersect.pointcolor(scene.ambient_coefficient, \
+                        scene.diffuse_coefficient(), shade)
         return point_color # alter for shadow
     else:
-        return (0, 0, 0)
+        return scene.blank_color
     return
 
 def raytrace(ray, objects):
@@ -36,7 +51,7 @@ def raytrace(ray, objects):
 
 def inshadow(intersect_point, normal, light_vector, objects):
     # given an object and light vector, checks whether or not the object is in shadow
-    new_point = intersect_point.movepoint(normal, shadow_bias)
+    new_point = intersect_point.movepoint(normal, scene.shadow_bias)
     master_dist = new_point.distance(light_vector.origin)
     for x in objects:
         dist = x.ray_intersect(light_vector)
@@ -44,43 +59,16 @@ def inshadow(intersect_point, normal, light_vector, objects):
             return True
     return False
 
-def dotproduct(a, b):
-    return (a.unitvector.x * b.unitvector.x) + \
-           (a.unitvector.y * b.unitvector.y) + \
-           (a.unitvector.z * b.unitvector.z)
-
 def lambertshade(light_vector, normal_vector):
-    shade = dotproduct(light_vector.scale(-1), normal_vector)
+    shade = light_vector.scale(-1).dotproduct(normal_vector)
     if shade < 0:
         shade = 0.0
     return shade
 
-camera = Coord(0, 0, 0)
-light = Coord(-1.5, 1, 0)
-ambient_coefficient = 0.2
-diffuse_coefficient = 1.0 - ambient_coefficient
-shadow_bias = 1e-4
-objects = []
-objects.append( Sphere( Coord(-0.5, 0, 10), 1, (255, 0, 0) ) )
-objects.append( Sphere( Coord(0.5, 0, 16), 2, (0, 255, 0) ) )
+scene = Scene(800, 600)
+scene.light = Coord(-2, 6, 0)
+scene.objects.append( Sphere( Coord(-0.5, 0.25, 10), 1, (255, 0, 0) ) )
+scene.objects.append( Sphere( Coord(0.5, 0, 16), 2, (0, 255, 0) ) )
+scene.objects.append( Plane( Coord(0, -2.0, 10), Coord(0, 1, 10), (0, 0, 255) ) )
 
-# Set frame details
-frame_width = 800 # in pixels
-frame_height = 600 # in pixels
-frame_depth = 6 # in units
-frame_unit = 0.005
-
-pixels = []
-ypos = frame_height * frame_unit / 2.0
-
-for y in range(frame_height):
-    xpos = -frame_width * frame_unit / 2.0
-    for x in range(frame_width):
-        ray = Ray(point1=camera, point2=Coord(xpos, ypos, frame_depth))
-        pixels.append( getpixel(ray, objects) )
-        xpos += frame_unit
-    ypos -= frame_unit
-
-image = Image.new('RGB', (frame_width, frame_height))
-image.putdata(pixels)
-image.save('test.jpg')
+createimage(scene)

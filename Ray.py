@@ -9,12 +9,20 @@ class Ray:
         elif 'origin' in kwargs:
             self.origin = kwargs['origin']
             self.unitvector = kwargs['vector']
+        self.x = self.unitvector.x
+        self.y = self.unitvector.y
+        self.z = self.unitvector.z
 
     def scale(self, num):
-        x = self.unitvector.x * num
-        y = self.unitvector.y * num
-        z = self.unitvector.z * num
+        x = self.x * num
+        y = self.y * num
+        z = self.z * num
         return Ray( origin=self.origin, vector=Coord(x, y, z) )
+
+    def dotproduct(self, b):
+        return (self.x * b.x) + \
+               (self.y * b.y) + \
+               (self.z * b.z)
 
     def intersect_point(self, dist):
         x = self.unitvector.x * dist + self.origin.x
@@ -25,7 +33,7 @@ class Ray:
     # Caculates the unit vector given two points
     def calculate_unitvector(self, point1, point2):
         #first finds the directional vector
-        d = Coord(point2.x - point1.x, point2.y - point1.y, point2.z - point1.z)
+        d = point1.directionvector(point2)
         # Calculates magnitude based on vector
         m = math.sqrt(d.x**2 + d.y**2 + d.z**2)
         # Calculates the unit vector
